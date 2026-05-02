@@ -1,13 +1,10 @@
-import java.util.ArrayList;
 import java.util.Scanner;
 
 // This is the main class of the program.
-// It shows the menus, reads user input, and manages all event data.
+// It shows the menus, reads user input, and delegates event data management.
 public class Main {
-    // These lists store all data entered by the user while the program is running.
-    private final ArrayList<Event> events = new ArrayList<>();
-    private final ArrayList<Venue> venues = new ArrayList<>();
-    private final ArrayList<AcademicDepartment> departments = new ArrayList<>();
+    // This manager stores all data entered by the user while the program is running.
+    private final EventManager eventManager = new EventManager();
 
     // This scanner is used to read input from the keyboard.
     private final Scanner scanner = new Scanner(System.in);
@@ -176,7 +173,7 @@ public class Main {
         }
 
         // Add the new venue object to the list after it is created successfully.
-        venues.add(venue);
+        eventManager.addVenue(venue);
         System.out.println("Venue added successfully.");
     }
 
@@ -189,7 +186,7 @@ public class Main {
         // A department has a Person object to represent the responsible person.
         Person responsiblePerson = new Person(responsiblePersonName);
         AcademicDepartment department = new AcademicDepartment(departmentName, responsiblePerson);
-        departments.add(department);
+        eventManager.addDepartment(department);
 
         System.out.println("Department added successfully.");
     }
@@ -198,13 +195,13 @@ public class Main {
     // and creates the correct event object.
     private void addEvent() {
         // An event must belong to an existing venue.
-        if (venues.isEmpty()) {
+        if (!eventManager.hasVenues()) {
             System.out.println("At least one venue must exist before adding an event.");
             return;
         }
 
         // An event must also belong to an existing department.
-        if (departments.isEmpty()) {
+        if (!eventManager.hasDepartments()) {
             System.out.println("At least one department must exist before adding an event.");
             return;
         }
@@ -221,7 +218,7 @@ public class Main {
         SimpleDateTime endDateTime = readDateTime("Enter end date/time (yyyy-MM-dd HH:mm): ");
 
         // The event start must happen before the event end.
-        if (!startDateTime.isBefore(endDateTime)) {
+        if (!eventManager.isValidEventTime(startDateTime, endDateTime)) {
             System.out.println("Invalid event time range. Start time must be before end time.");
             return;
         }
@@ -233,7 +230,7 @@ public class Main {
             return;
         }
 
-        if (expectedAttendance > selectedVenue.getMaximumCapacity()) {
+        if (!eventManager.canVenueHoldEvent(selectedVenue, expectedAttendance)) {
             System.out.println("Event rejected. Expected attendance exceeds the selected venue capacity.");
             return;
         }
@@ -306,20 +303,20 @@ public class Main {
         }
 
         // Reject the event if the chosen venue is already booked during this time.
-        if (hasVenueOverlap(event)) {
+        if (eventManager.hasVenueOverlap(event)) {
             System.out.println("Event rejected. The selected venue is already booked during that time.");
             return;
         }
 
-        events.add(event);
+        eventManager.addEvent(event);
         System.out.println("Event added successfully.");
     }
 
     // This method shows the list of venues and lets the user choose one.
     private Venue selectVenue() {
         System.out.println("\nAvailable Venues");
-        for (int i = 0; i < venues.size(); i++) {
-            Venue venue = venues.get(i);
+        for (int i = 0; i < eventManager.getVenues().size(); i++) {
+            Venue venue = eventManager.getVenueByIndex(i);
             System.out.printf(
                     "%d. %s (%s, Capacity: %d)%n",
                     i + 1,
@@ -330,18 +327,18 @@ public class Main {
         }
 
         int selection = readInt("Select a venue by number: ");
-        if (selection < 1 || selection > venues.size()) {
+        if (selection < 1 || selection > eventManager.getVenues().size()) {
             System.out.println("Invalid venue selection.");
             return null;
         }
-        return venues.get(selection - 1);
+        return eventManager.getVenueByIndex(selection - 1);
     }
 
     // This method shows the list of departments and lets the user choose one.
     private AcademicDepartment selectDepartment() {
         System.out.println("\nAvailable Departments");
-        for (int i = 0; i < departments.size(); i++) {
-            AcademicDepartment department = departments.get(i);
+        for (int i = 0; i < eventManager.getDepartments().size(); i++) {
+            AcademicDepartment department = eventManager.getDepartmentByIndex(i);
             System.out.printf(
                     "%d. %s (Responsible Person: %s)%n",
                     i + 1,
@@ -351,43 +348,23 @@ public class Main {
         }
 
         int selection = readInt("Select a department by number: ");
-        if (selection < 1 || selection > departments.size()) {
+        if (selection < 1 || selection > eventManager.getDepartments().size()) {
             System.out.println("Invalid department selection.");
             return null;
         }
-        return departments.get(selection - 1);
-    }
-
-    // This method checks whether a new event overlaps with another event
-    // that is already booked in the same venue.
-    private boolean hasVenueOverlap(Event newEvent) {
-        for (Event existingEvent : events) {
-            if (!existingEvent.getVenue().equals(newEvent.getVenue())) {
-                continue;
-            }
-
-            // Two events overlap when the new event starts before the old one ends
-            // and the new event ends after the old one starts.
-            boolean overlaps = newEvent.getStartDateTime().isBefore(existingEvent.getEndDateTime())
-                    && newEvent.getEndDateTime().isAfter(existingEvent.getStartDateTime());
-
-            if (overlaps) {
-                return true;
-            }
-        }
-        return false;
+        return eventManager.getDepartmentByIndex(selection - 1);
     }
 
     // This method displays all saved events.
     private void viewEvents() {
         System.out.println("\nEvent List");
-        if (events.isEmpty()) {
+        if (!eventManager.hasEvents()) {
             System.out.println("No events have been added yet.");
             return;
         }
 
-        for (int i = 0; i < events.size(); i++) {
-            System.out.printf("%d.%n%s%n", i + 1, events.get(i).getDisplayDetails());
+        for (int i = 0; i < eventManager.getEvents().size(); i++) {
+            System.out.printf("%d.%n%s%n", i + 1, eventManager.getEvents().get(i).getDisplayDetails());
             System.out.println("--------------------------------------");
         }
     }
@@ -395,13 +372,13 @@ public class Main {
     // This method displays all saved venues.
     private void viewVenues() {
         System.out.println("\nVenue List");
-        if (venues.isEmpty()) {
+        if (!eventManager.hasVenues()) {
             System.out.println("No venues have been added yet.");
             return;
         }
 
-        for (int i = 0; i < venues.size(); i++) {
-            System.out.printf("%d.%n%s%n", i + 1, venues.get(i).getDisplayDetails());
+        for (int i = 0; i < eventManager.getVenues().size(); i++) {
+            System.out.printf("%d.%n%s%n", i + 1, eventManager.getVenues().get(i).getDisplayDetails());
             System.out.println("--------------------------------------");
         }
     }
@@ -409,13 +386,13 @@ public class Main {
     // This method displays all saved departments.
     private void viewDepartments() {
         System.out.println("\nDepartment List");
-        if (departments.isEmpty()) {
+        if (!eventManager.hasDepartments()) {
             System.out.println("No departments have been added yet.");
             return;
         }
 
-        for (int i = 0; i < departments.size(); i++) {
-            AcademicDepartment department = departments.get(i);
+        for (int i = 0; i < eventManager.getDepartments().size(); i++) {
+            AcademicDepartment department = eventManager.getDepartments().get(i);
             System.out.printf(
                     "%d.%nDepartment Name: %s%nResponsible Person: %s%n--------------------------------------%n",
                     i + 1,
