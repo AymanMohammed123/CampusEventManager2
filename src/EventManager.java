@@ -71,7 +71,8 @@ public class EventManager {
         return events;
     }
 
-    // Checks whether at least one event exists before showing the event list.
+    // This method tells Main if the event list has at least one event.
+    // It returns true when there are events, and false when the list is empty.
     public boolean hasEvents() {
         return !events.isEmpty();
     }
