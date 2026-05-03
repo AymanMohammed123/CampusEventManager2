@@ -369,6 +369,55 @@ public class Main {
         }
     }
 
+    // This method lets the user cancel one saved event.
+    // It shows event numbers, checks the user's choice, and removes the selected event.
+    private void cancelEventMenu() {
+        System.out.println("\nCancel Event");
+
+        // Do not ask for an event number when the list is empty.
+        if (!eventManager.hasEvents()) {
+            System.out.println("No events to cancel.");
+            return;
+        }
+
+        // Show all events with numbers so the user knows which number to enter.
+        for (int i = 0; i < eventManager.getEvents().size(); i++) {
+            System.out.printf("%d.%n%s%n", i + 1, eventManager.getEvents().get(i).getDisplayDetails());
+            System.out.println("--------------------------------------");
+        }
+
+        int eventNumber = readInt("Enter the event number to cancel: ");
+
+        // The valid numbers start at 1 and end at the number of events in the list.
+        if (eventNumber < 1 || eventNumber > eventManager.getEvents().size()) {
+            System.out.println("Invalid event number.");
+            return;
+        }
+
+        // The number is valid, so ask EventManager to remove that event.
+        eventManager.cancelEvent(eventNumber);
+        System.out.println("Event canceled successfully.");
+    }
+
+    // This method asks for an exact event name and displays the event if it exists.
+    private void searchEventMenu() {
+        System.out.println("\nSearch Event");
+
+        // Read the event name the user wants to find.
+        String eventName = readNonEmptyString("Enter the exact event name: ");
+
+        // Ask EventManager to search the events list.
+        Event foundEvent = eventManager.searchEvent(eventName);
+
+        // If the search returns an Event object, display its details.
+        // If it returns null, no matching event was found.
+        if (foundEvent != null) {
+            System.out.println(foundEvent.getDisplayDetails());
+        } else {
+            System.out.println("No event found.");
+        }
+    }
+
     // This method displays all saved venues.
     private void viewVenues() {
         System.out.println("\nVenue List");
