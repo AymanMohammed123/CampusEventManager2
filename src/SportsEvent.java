@@ -29,7 +29,7 @@ public class SportsEvent extends Event {
     // Returns the special details of a sports event.
     @Override
     public String getSpecificDetails() {
-        return "Sport Category: " + sportCategory + "\n"
+        return "Sport Category (Male/Female): " + sportCategory + "\n"
                 + "Team Format: " + teamFormat;
     }
 }
