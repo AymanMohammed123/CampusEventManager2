@@ -70,6 +70,10 @@ public class Main {
                 addEvent();
             } else if (choice == 2) {
                 viewEvents();
+            } else if (choice == 3) {
+                cancelEventMenu();
+            } else if (choice == 4) {
+                searchEventMenu();
             } else if (choice == 0) {
                 back = true;
             } else {
