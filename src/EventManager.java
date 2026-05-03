@@ -82,6 +82,25 @@ public class EventManager {
         events.remove(eventNumber - 1);
     }
 
+    // This method searches for an event by its exact name.
+    // It uses lowercase copies so "Workshop" and "workshop" can still match.
+    public Event searchEvent(String eventName) {
+        String searchedName = eventName.toLowerCase();
+
+        // Loop through every saved event and compare its name with the user's name.
+        for (Event event : events) {
+            String currentEventName = event.getEventName().toLowerCase();
+
+            // equals() checks if both lowercase names are exactly the same.
+            if (currentEventName.equals(searchedName)) {
+                return event;
+            }
+        }
+
+        // Return null when the loop finishes without finding a matching event.
+        return null;
+    }
+
     // An event is valid only when its start date/time is before its end date/time.
     public boolean isValidEventTime(SimpleDateTime startDateTime, SimpleDateTime endDateTime) {
         return startDateTime.isBefore(endDateTime);
