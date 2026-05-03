@@ -76,6 +76,12 @@ public class EventManager {
         return !events.isEmpty();
     }
 
+    // This method removes an event from the list.
+    // The eventNumber is the number shown to the user, so 1 means the first event.
+    public void cancelEvent(int eventNumber) {
+        events.remove(eventNumber - 1);
+    }
+
     // An event is valid only when its start date/time is before its end date/time.
     public boolean isValidEventTime(SimpleDateTime startDateTime, SimpleDateTime endDateTime) {
         return startDateTime.isBefore(endDateTime);
