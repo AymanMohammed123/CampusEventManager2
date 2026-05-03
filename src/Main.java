@@ -59,6 +59,8 @@ public class Main {
             System.out.println("\n----------- Event Menu -----------");
             System.out.println("1. Add Event");
             System.out.println("2. View Events");
+            System.out.println("3. Cancel Event");
+            System.out.println("4. Search Event");
             System.out.println("0. Back");
 
             int choice = readInt("Choose an option: ");
